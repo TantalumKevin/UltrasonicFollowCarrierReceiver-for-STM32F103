@@ -137,8 +137,8 @@
             <DriverSelection>4101</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
-          <Flash2>STLink\ST-LINKIII-KEIL_SWO.dll</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash2>BIN\UL2CM3.DLL</Flash2>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103x6,USE_HAL_DRIVER,STM32F103x6</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;../IQmathLib</IncludePath>
+              <IncludePath>../Inc; ../Drivers/STM32F1xx_HAL_Driver/Inc; ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy; ../Drivers/CMSIS/Device/ST/STM32F1xx/Include; ../Drivers/CMSIS/Include; ../IQmathLib</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -412,6 +412,11 @@
               <FileName>dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/tim.c</FilePath>
             </File>
             <File>
               <FileName>usart.c</FileName>
@@ -545,8 +550,8 @@
   <RTE>
     <apis/>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="CMSIS Core">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.5.0" condition="ARMv6_7_8-M Device">
+        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="5.8.0"/>
         <targetInfos>
           <targetInfo name="Receiver"/>
         </targetInfos>

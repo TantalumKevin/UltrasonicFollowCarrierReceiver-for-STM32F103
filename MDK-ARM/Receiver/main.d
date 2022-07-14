@@ -27,9 +27,12 @@ receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
+receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 receiver\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 receiver\main.o: ../Inc/adc.h
 receiver\main.o: ../Inc/dma.h
+receiver\main.o: ../Inc/tim.h
 receiver\main.o: ../Inc/usart.h
 receiver\main.o: ../Inc/gpio.h
 receiver\main.o: ../IQmathLib/IQmathLib.h

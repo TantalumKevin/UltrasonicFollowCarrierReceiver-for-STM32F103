@@ -28,5 +28,7 @@ receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_ex.h
 receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
+receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 receiver\usart.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 receiver\usart.o: E:\Program Files\Keil\ARM\ARMCC\Bin\..\include\stdio.h

@@ -22,6 +22,7 @@
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -55,8 +56,9 @@
 		设计时：SEQL(左侧)=0x0400=1024,SEQR(右侧)=0x8000=2048
 	1/3=L/R相对方位
 	*/
-uint16_t SEQ_flag= 0;
-_iq r1;
+uint16_t SEQ_flag = 0;
+//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
+uint8_t DMA_flag = 250;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,6 +103,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
+  MX_TIM1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
@@ -120,19 +123,28 @@ int main(void)
 				uint16_t Temp_ADC[2]={0,0},Max_ADC[2]={0,0};
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2);
 				//控制5ms不断比较峰值数据
-				
-				if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
-				if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
-				
+				HAL_TIM_Base_Start_IT(&htim1);
+				while(DMA_flag)
+				{
+					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
+					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
+				}
+				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
-				//判断角度和距离（计算方法）
+				//判断角度和距离(计算方法)
 				float dst = 0.0 ,agl = 0.0;
-				
-				
+				_iq r1 ;
+				r1 = _IQ(10);
+				agl = _IQtoF(r1);
 				//串口输出
 				printf("%03.1f",dst);
 				printf("%03.1f",agl);
+				
+				//标志位清零
+				SEQ_flag = 0;
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
+				DMA_flag = 250;
 		}
   }
   /* USER CODE END 3 */

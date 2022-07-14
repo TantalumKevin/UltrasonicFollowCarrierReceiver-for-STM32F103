@@ -27,5 +27,7 @@ receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_adc_e
 receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
 receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
+receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
+receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
 receiver\stm32f1xx_it.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 receiver\stm32f1xx_it.o: ../Inc/stm32f1xx_it.h
