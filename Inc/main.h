@@ -62,6 +62,8 @@ void Error_Handler(void);
 #define ITSL_GPIO_Port GPIOA
 #define ITSR_Pin GPIO_PIN_2
 #define ITSR_GPIO_Port GPIOA
+#define LED_Pin GPIO_PIN_0
+#define LED_GPIO_Port GPIOB
 #define SEQR_Pin GPIO_PIN_15
 #define SEQR_GPIO_Port GPIOB
 #define SEQR_EXTI_IRQn EXTI15_10_IRQn

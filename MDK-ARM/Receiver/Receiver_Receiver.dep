@@ -1,7 +1,7 @@
 Dependencies for Project 'Receiver', Target 'Receiver': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
 F (startup_stm32f103x6.s)(0x62D04009)(--cpu Cortex-M3 -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Receiver-I"E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"--pd "__UVISION_VERSION SETA 536" --pd "_RTE_ SETA 1" --pd "STM32F10X_LD SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32f103x6.lst --xref -o receiver\startup_stm32f103x6.o --depend receiver\startup_stm32f103x6.d)
-F (../Src/main.c)(0x62D0452C)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../IQmathLib-I.\RTE\_Receiver-I"E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6 -DUSE_HAL_DRIVER -DSTM32F103x6-o receiver\main.o --omf_browse receiver\main.crf --depend receiver\main.d)
+F (../Src/main.c)(0x62E02A33)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../IQmathLib-I.\RTE\_Receiver-I"E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6 -DUSE_HAL_DRIVER -DSTM32F103x6-o receiver\main.o --omf_browse receiver\main.crf --depend receiver\main.d)
 I (../Inc/main.h)(0x62D04007)
 I (../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h)(0x625E0373)
 I (../Inc/stm32f1xx_hal_conf.h)(0x62D04007)
@@ -41,6 +41,7 @@ I (../IQmathLib/IQmathLib.h)(0x62D02564)
 I (E:\Program Files\Keil\ARM\ARMCC\include\limits.h)(0x60252376)
 I (E:\Program Files\Keil\ARM\ARMCC\include\stdlib.h)(0x60252374)
 I (E:\Program Files\Keil\ARM\ARMCC\include\stdio.h)(0x60252374)
+I (E:\Program Files\Keil\ARM\ARMCC\include\string.h)(0x6025237E)
 F (../Src/gpio.c)(0x62D04004)(--c99 -c --cpu Cortex-M3 -D__MICROLIB -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc -I ../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F1xx/Include -I ../Drivers/CMSIS/Include -I ../IQmathLib-I.\RTE\_Receiver-I"E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include"-I"E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include"-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F10X_LD -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F103x6 -DUSE_HAL_DRIVER -DSTM32F103x6-o receiver\gpio.o --omf_browse receiver\gpio.crf --depend receiver\gpio.d)
 I (../Inc/gpio.h)(0x62D04004)
 I (../Inc/main.h)(0x62D04007)

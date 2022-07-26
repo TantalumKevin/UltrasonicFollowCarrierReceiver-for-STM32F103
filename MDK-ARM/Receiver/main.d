@@ -39,3 +39,4 @@ receiver\main.o: ../IQmathLib/IQmathLib.h
 receiver\main.o: E:\Program Files\Keil\ARM\ARMCC\Bin\..\include\limits.h
 receiver\main.o: E:\Program Files\Keil\ARM\ARMCC\Bin\..\include\stdlib.h
 receiver\main.o: E:\Program Files\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+receiver\main.o: E:\Program Files\Keil\ARM\ARMCC\Bin\..\include\string.h

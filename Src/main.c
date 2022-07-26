@@ -30,6 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "IQmathLib.h"
 #include "stdio.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-/*时序标志位
+/*时序标志
 	0:待定
 	Pin:该Pin率先拉起
 		设计时：SEQL(左侧)=0x0400=1024,SEQR(右侧)=0x8000=2048
@@ -58,13 +59,14 @@
 	*/
 uint16_t SEQ_flag = 0;
 //这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
-uint8_t DMA_flag = 250;
+uint16_t DMA_flag = 250*200;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+uint8_t motor_init(void);
+uint16_t sonic_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -79,7 +81,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	uint16_t std=0;
   /* USER CODE END 1 */
   
 
@@ -89,7 +91,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -104,9 +106,28 @@ int main(void)
   MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+	//呼吸灯呼吸2min
+	
+	
+	
+	if(motor_init())
+		while(1)
+		{
+			//闪灯
+			HAL_Delay(500);
+			
+			HAL_Delay(500);
+		}
+	//闪灯
+	HAL_Delay(500);
+	
+	HAL_Delay(500);
 
+	std=sonic_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,7 +137,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag为1或3时视为有声波信号传入，进行数据读取
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
@@ -135,7 +156,8 @@ int main(void)
 				//判断角度和距离(计算方法)
 				float dst = 0.0 ,agl = 0.0;
 				_iq r1 ;
-				r1 = _IQ(10);
+				
+				r1 = _IQ(std+10);
 				agl = _IQtoF(r1);
 				//串口输出
 				printf("%03.1f",dst);
@@ -201,6 +223,46 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			SEQ_flag = GPIO_Pin;
 		else 
 			SEQ_flag = (SEQ_flag - GPIO_Pin) / 1024 + 2;	
+}
+
+uint8_t motor_init(void)
+{
+	printf("steste");
+	char info[10];
+	gets(info);
+	if(!(strncmp(info,"sxe\n",1)||strncmp(info+2,"e\n",1)))
+		return info[1]-48;
+	return 255;
+}
+
+uint16_t sonic_init(void)
+{
+		uint16_t Temp_std[100];
+		uint64_t Temp = 0, time = 0;
+		//控制5s不断记录数据
+		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,100);
+		HAL_TIM_Base_Start_IT(&htim1);
+		HAL_Delay(1);
+		//大约读入80组数据
+		//最好能拿板子打断点测试一下
+		for(uint8_t i = 0; i < 5 ; i++)
+			while(DMA_flag)
+			{
+				for(uint8_t j = 0; j <= 1; j++)
+				{
+					for(int k=0; k<50 ;k++)
+					{
+						Temp += Temp_std[50*j+k];
+						time++;
+					}
+					//闪灯
+					HAL_Delay(1);
+				}
+			}
+		HAL_TIM_Base_Stop_IT(&htim1);
+		HAL_ADC_Stop_DMA(&hadc1);
+		DMA_flag = 250;
+		return (uint16_t)Temp/time;
 }
 /* USER CODE END 4 */
 
