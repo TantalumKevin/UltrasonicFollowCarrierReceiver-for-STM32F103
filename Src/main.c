@@ -58,7 +58,7 @@
 	1/3=L/R相对方位
 	*/
 uint16_t SEQ_flag = 0;
-//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
+//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达5ms控制时间
 uint16_t DMA_flag = 250*200;
 /* USER CODE END PV */
 
@@ -67,6 +67,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 uint8_t motor_init(void);
 uint16_t sonic_init(void);
+void Lumos(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,22 +111,23 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	//呼吸灯呼�?2min
-	
+	//等待串口拉起
+	while(1)
+	{
+		break;
+	}
 	
 	
 	if(motor_init())
-		while(1)
+	{
+		while(motor_init())
 		{
 			//闪灯
-			HAL_Delay(500);
-			
-			HAL_Delay(500);
+			Lumos();
 		}
+	}
 	//闪灯
-	HAL_Delay(500);
-	
-	HAL_Delay(500);
+	Lumos(); 
 
 	std=sonic_init();
   /* USER CODE END 2 */
@@ -137,23 +139,26 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�?
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取 
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
 				uint16_t Temp_ADC[2]={0,0},Max_ADC[2]={0,0};
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2);
-				//控制5ms不断比较峰�?�数�?
+				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
 				while(DMA_flag)
 				{
+					/*
 					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
+					*/
+					//注意这个地方要重写，做平均数据处理
 				}
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
-				//判断角度和距�?(计算方法)
+				//判断角度和距离(计算方法)
 				float dst = 0.0 ,agl = 0.0;
 				_iq r1 ;
 				
@@ -163,9 +168,9 @@ int main(void)
 				printf("%03.1f",dst);
 				printf("%03.1f",agl);
 				
-				//标志位清�?
+				//标志位清0
 				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
 				DMA_flag = 250;
 		}
   }
@@ -230,39 +235,56 @@ uint8_t motor_init(void)
 	printf("steste");
 	char info[10];
 	gets(info);
-	if(!(strncmp(info,"sxe\n",1)||strncmp(info+2,"e\n",1)))
-		return info[1]-48;
-	return 255;
+	if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
+		return info[1]-48+1;
+	return 0;
 }
 
 uint16_t sonic_init(void)
 {
-		uint16_t Temp_std[100];
+		uint16_t Temp_std[2000];
 		uint64_t Temp = 0, time = 0;
 		//控制5s不断记录数据
-		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,100);
+		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,2000);
 		HAL_TIM_Base_Start_IT(&htim1);
 		HAL_Delay(1);
-		//大约读入80组数�?
-		//�?好能拿板子打断点测试�?�?
+		//大约读入8k组数
+		//拿板子打断点测试
+	
 		for(uint8_t i = 0; i < 5 ; i++)
+		{
+			HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
+			__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
 			while(DMA_flag)
 			{
-				for(uint8_t j = 0; j <= 1; j++)
+				for(uint8_t j = 0; j <= 8; j++)
 				{
-					for(int k=0; k<50 ;k++)
+					for(uint8_t k=0; k<250 ;k++)
 					{
-						Temp += Temp_std[50*j+k];
+						Temp += Temp_std[250*j+k];
 						time++;
 					}
-					//闪灯
-					HAL_Delay(1);
 				}
+				//闪灯
+				__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
+						(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
 			}
+			HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
+		}
 		HAL_TIM_Base_Stop_IT(&htim1);
 		HAL_ADC_Stop_DMA(&hadc1);
 		DMA_flag = 250;
 		return (uint16_t)Temp/time;
+}
+
+void Lumos(void)
+{
+	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
+	__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
+	HAL_Delay(500);
+	__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,1000);
+	HAL_Delay(500);
+	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
 }
 /* USER CODE END 4 */
 
