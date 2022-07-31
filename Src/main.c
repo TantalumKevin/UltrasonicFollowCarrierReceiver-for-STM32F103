@@ -58,7 +58,7 @@
 	1/3=L/R相对方位
 	*/
 uint16_t SEQ_flag = 0;
-//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达5ms控制时间
+//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达5ms控制时间
 uint16_t DMA_flag = 250*200;
 /* USER CODE END PV */
 
@@ -139,26 +139,37 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取 
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�? 
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
-				uint16_t Temp_ADC[2]={0,0},Max_ADC[2]={0,0};
-				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2);
+				uint16_t Temp_ADC[2000], avg;
+				uint64_t sum = 0,time = 0;
+				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
 				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
+				DMA_flag = 250 ; 
 				while(DMA_flag)
 				{
 					/*
 					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
 					*/
-					//注意这个地方要重写，做平均数据处理
+					//注意这个地方要重写，做平均数据处�?
+					for(uint8_t j = 0; j <= 8; j++)
+					{
+						for(uint8_t k=0; k<250 ;k++)
+						{
+							sum += Temp_ADC[250*j+k];
+							time++;
+						}
+					}
 				}
+				avg = (uint16_t) sum/time;
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
-				//判断角度和距离(计算方法)
+				//判断角度和距�?(计算方法)
 				float dst = 0.0 ,agl = 0.0;
 				_iq r1 ;
 				
@@ -170,7 +181,7 @@ int main(void)
 				
 				//标志位清0
 				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
 				DMA_flag = 250;
 		}
   }
