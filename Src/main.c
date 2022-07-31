@@ -58,7 +58,7 @@
 	1/3=L/R相对方位
 	*/
 uint16_t SEQ_flag = 0;
-//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
+//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
 uint16_t DMA_flag = 250*200;
 /* USER CODE END PV */
 
@@ -110,7 +110,7 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	//呼吸灯呼吸2min
+	//呼吸灯呼�?2min
 	
 	
 	
@@ -137,13 +137,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�?
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
 				uint16_t Temp_ADC[2]={0,0},Max_ADC[2]={0,0};
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2);
-				//控制5ms不断比较峰值数据
+				//控制5ms不断比较峰�?�数�?
 				HAL_TIM_Base_Start_IT(&htim1);
 				while(DMA_flag)
 				{
@@ -153,7 +153,7 @@ int main(void)
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
-				//判断角度和距离(计算方法)
+				//判断角度和距�?(计算方法)
 				float dst = 0.0 ,agl = 0.0;
 				_iq r1 ;
 				
@@ -163,9 +163,9 @@ int main(void)
 				printf("%03.1f",dst);
 				printf("%03.1f",agl);
 				
-				//标志位清零
+				//标志位清�?
 				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
 				DMA_flag = 250;
 		}
   }
@@ -243,8 +243,8 @@ uint16_t sonic_init(void)
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,100);
 		HAL_TIM_Base_Start_IT(&htim1);
 		HAL_Delay(1);
-		//大约读入80组数据
-		//最好能拿板子打断点测试一下
+		//大约读入80组数�?
+		//�?好能拿板子打断点测试�?�?
 		for(uint8_t i = 0; i < 5 ; i++)
 			while(DMA_flag)
 			{
