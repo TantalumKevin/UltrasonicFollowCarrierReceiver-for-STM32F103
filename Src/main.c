@@ -60,6 +60,7 @@
 uint16_t SEQ_flag = 0;
 //这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达5ms控制时间
 uint16_t DMA_flag = 250*200;
+uint16_t delta_t = 0 ;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,14 +120,8 @@ int main(void)
 	
 	
 	if(motor_init())
-	{
 		while(motor_init())
-		{
-			//闪灯
 			Lumos();
-		}
-	}
-	//闪灯
 	Lumos(); 
 
 	std=sonic_init();
@@ -236,9 +231,19 @@ void SystemClock_Config(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 		if(!SEQ_flag)
+		{
 			SEQ_flag = GPIO_Pin;
+			HAL_TIM_Base_Start(&htim2);
+		}
 		else 
+		{
 			SEQ_flag = (SEQ_flag - GPIO_Pin) / 1024 + 2;	
+			delta_t = __HAL_TIM_GET_COUNTER(&htim2); //在运行时读取定时器的当前计数值 ， 就 是读 取TIMx_CNT寄存器的值;
+			 //启 用 某 个 定 时 器 ， 就 是 将 定 时 器 控 制 寄 存 器TIMx_CR1的CEN位置1
+			HAL_TIM_Base_Stop(&htim2); 
+			
+
+		}
 }
 
 uint8_t motor_init(void)
