@@ -139,7 +139,7 @@ int main(void)
 		{
 				//DMA读入数据
 				uint16_t Temp_ADC[2000], avg;
-				uint64_t sum = 0,time = 0;
+				uint64_t sum[2] = {0,0},time = 0;
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
 				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
@@ -151,11 +151,11 @@ int main(void)
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
 					*/
 					//注意这个地方要重写，做平均数据处�?
-					for(uint8_t j = 0; j <= 8; j++)
+					for(uint8_t j = 0; j <= 1; j++)
 					{
-						for(uint8_t k=0; k<250 ;k++)
+						for(uint16_t k=j; k<2000 ;k+=2)
 						{
-							sum += Temp_ADC[250*j+k];
+							sum[j] += Temp_ADC[j+k];
 							time++;
 						}
 					}
@@ -167,7 +167,7 @@ int main(void)
 				//判断角度和距�?(计算方法)
 				float dst = 0.0 ,agl = 0.0;
 				_iq r1 ;
-				
+				//已知数据 Δt 单位0.1us Δl = 7cm
 				r1 = _IQ(std+10);
 				agl = _IQtoF(r1);
 				//串口输出
@@ -234,6 +234,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		{
 			SEQ_flag = GPIO_Pin;
 			HAL_TIM_Base_Start(&htim2);
+			__HAL_TIM_SetCounter(&htim2,0);
 		}
 		else 
 		{
@@ -241,8 +242,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			delta_t = __HAL_TIM_GET_COUNTER(&htim2); //在运行时读取定时器的当前计数值 ， 就 是读 取TIMx_CNT寄存器的值;
 			 //启 用 某 个 定 时 器 ， 就 是 将 定 时 器 控 制 寄 存 器TIMx_CR1的CEN位置1
 			HAL_TIM_Base_Stop(&htim2); 
-			
-
 		}
 }
 
@@ -259,7 +258,7 @@ uint8_t motor_init(void)
 uint16_t sonic_init(void)
 {
 		uint16_t Temp_std[2000];
-		uint64_t Temp = 0, time = 0;
+		uint64_t Temp[2] = {0,0}, time = 0;
 		//控制5s不断记录数据
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,2000);
 		HAL_TIM_Base_Start_IT(&htim1);
@@ -273,11 +272,11 @@ uint16_t sonic_init(void)
 			__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
 			while(DMA_flag)
 			{
-				for(uint8_t j = 0; j <= 8; j++)
+				for(uint8_t j = 0; j <= 1; j++)
 				{
-					for(uint8_t k=0; k<250 ;k++)
+					for(uint16_t k=j; k<2000 ;k+=2)
 					{
-						Temp += Temp_std[250*j+k];
+						Temp[j] += Temp_std[j+k];
 						time++;
 					}
 				}
