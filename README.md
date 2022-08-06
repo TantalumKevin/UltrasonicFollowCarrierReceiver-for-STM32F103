@@ -2,7 +2,7 @@
 
 #### 介绍
 Ultrasonic Follow Carrier Receiver for STM32F103
-超声跟随载物平台接收端-树莓派
+超声跟随载物平台接收端-STM32F103
 
 #### 软件架构
 软件架构说明
