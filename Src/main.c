@@ -176,7 +176,7 @@ int main(void)
 				HAL_ADC_Stop_DMA(&hadc1);
 				
 				//判断角度和距离(计算方法)
-				float dst = 0.0 ,agl = 0.0;
+				//float dst = 0.0 ,agl = 0.0;
 				//_iq10 theta,alpha,delta_r ;
 				//已知数据 Δt 单位0.1us Δl = 7cm
 				//计算公式
