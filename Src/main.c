@@ -69,7 +69,7 @@ void SystemClock_Config(void);
 uint8_t motor_init(void);
 uint16_t sonic_init(void);
 void Lumos(void);
-void printUart(char* type,float data);
+void printUart(float data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -183,9 +183,9 @@ int main(void)
 				//theta = _IQ
 				
 				//串口输出
-				printUart("t",(float)delta_t);
-				printUart("a",(float)_IQ15toF(avg[0])-sonic_std);
-				printUart("b",(float)_IQ15toF(avg[1])-sonic_std);
+				printUart((float)delta_t);
+				printUart((float)_IQ15toF(avg[0])-sonic_std);
+				printUart((float)_IQ15toF(avg[1])-sonic_std);
 				
 				//标志位清0
 				SEQ_flag = 0;
@@ -318,10 +318,9 @@ void Lumos(void)
 	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
 }
 
-void printUart(char* type,float data)
+void printUart(float data)
 {
 	printf("s");
-	printf(type);
 	printf("%03.1f",data);
 	printf("e");
 }
