@@ -69,7 +69,7 @@ void SystemClock_Config(void);
 uint8_t motor_init(void);
 uint16_t sonic_init(void);
 void Lumos(void);
-void printUart(char* type,float16x4_t data);
+void printUart(char* type,float data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -85,7 +85,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	//超声数据参考比较值
-	uint16_t std=0;
+	uint16_t sonic_std=0;
   /* USER CODE END 1 */
   
 
@@ -133,7 +133,7 @@ int main(void)
 			Lumos();
 	Lumos(); 
 
-	std=sonic_init();
+	sonic_std=sonic_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -170,8 +170,8 @@ int main(void)
 						}
 					}
 				}
-				avg[0] = _iq15mpy(_iq15div(sum[0],time[0]),_IQ15(4096));
-				avg[1] = _iq15mpy(_iq15div(sum[1],time[1],_IQ15(4096)));
+				avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4096));
+				avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4096));
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
@@ -183,9 +183,9 @@ int main(void)
 				//theta = _IQ
 				
 				//串口输出
-				printUart("t",(float16x4_t)delta_t);
-				printUart("a",(float16x4_t)_IQ15toF(avg[0]))
-				printUart("b",(float16x4_t)_IQ15toF(avg[1]))
+				printUart("t",(float)delta_t);
+				printUart("a",(float)_IQ15toF(avg[0])-sonic_std);
+				printUart("b",(float)_IQ15toF(avg[1])-sonic_std);
 				
 				//标志位清0
 				SEQ_flag = 0;
@@ -269,7 +269,6 @@ uint8_t motor_init(void)
 		if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
 			return (uint8_t) info[1]-48;
 	}
-	return 255;
 }
 
 uint16_t sonic_init(void)
@@ -319,7 +318,7 @@ void Lumos(void)
 	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
 }
 
-void printUart(char* type,float16x4_t data)
+void printUart(char* type,float data)
 {
 	printf("s");
 	printf(type);
