@@ -58,7 +58,7 @@
 	1/3=L/R相对方位
 	*/
 uint16_t SEQ_flag = 0;
-//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达5ms控制时间
+//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达5ms控制时间
 uint16_t DMA_flag = 250*200;
 uint16_t delta_t = 0 ;
 /* USER CODE END PV */
@@ -69,6 +69,7 @@ void SystemClock_Config(void);
 uint8_t motor_init(void);
 uint16_t sonic_init(void);
 void Lumos(void);
+void printUart(char* type,float16x4_t data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,10 +117,14 @@ int main(void)
 	//等待串口拉起
 	while(1)
 	{
-		char info[10];
-		gets(info);
+		char info[10]={0};
+		while(!info[0])
+			gets(info);
 		if(!(strncmp(info,"shelloe",7)))
+		{
+			printf("shelloe");
 			break;
+		}
 	}
 	
 	
@@ -138,12 +143,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�? 
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�? 
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
-				uint16_t Temp_ADC[2000], avg[2];
-				uint64_t sum[2] = {0,0},time[2] = {0,0};
+				//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
+				uint16_t Temp_ADC[2000];
+				_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
 				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
@@ -154,39 +160,36 @@ int main(void)
 					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
 					*/
-					//注意这个地方要重写，做平均数据处�?
-					for(uint8_t j = 0; j <= 1; j++)
+					//注意这个地方要重写，做平均数据处�?
+					for(uint16_t k=0; k<2000 ;k+=2)
 					{
-						for(uint16_t k=j; k<2000 ;k+=2)
+						for(uint8_t j = 0; j <= 1; j++)
 						{
-							sum[j] += Temp_ADC[j+k];
+							sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),4096);
 							time[j]++;
 						}
 					}
 				}
-				avg[0] = (uint16_t) sum[0]/time[0];
-				avg[1] = (uint16_t) sum[1]/time[1];
+				avg[0] = _iq15mpy(_iq15div(sum[0],time[0]),_IQ15(4096));
+				avg[1] = _iq15mpy(_iq15div(sum[1],time[1],_IQ15(4096)));
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
-				//判断角度和距�?(计算方法)
+				//判断角度和距离(计算方法)
 				float dst = 0.0 ,agl = 0.0;
-				_iq10 theta,alpha,delta_r ;
+				//_iq10 theta,alpha,delta_r ;
 				//已知数据 Δt 单位0.1us Δl = 7cm
 				//计算公式
 				//theta = _IQ
 				
 				//串口输出
-				printf("sd");
-				printf("%03.1f",dst);
-				printf("e");
-				printf("sa");
-				printf("%03.1f",agl);
-				printf("e");
+				printUart("t",(float16x4_t)delta_t);
+				printUart("a",(float16x4_t)_IQ15toF(avg[0]))
+				printUart("b",(float16x4_t)_IQ15toF(avg[1]))
 				
 				//标志位清0
 				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
 				DMA_flag = 250;
 		}
   }
@@ -242,27 +245,31 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 		if(!SEQ_flag)
 		{
-			SEQ_flag = GPIO_Pin;
+			
 			HAL_TIM_Base_Start(&htim2);
 			__HAL_TIM_SetCounter(&htim2,0);
+			SEQ_flag = GPIO_Pin;
 		}
 		else 
 		{
-			SEQ_flag = (SEQ_flag - GPIO_Pin) / 1024 + 2;	
-			delta_t = __HAL_TIM_GET_COUNTER(&htim2); //在运行时读取定时器的当前计数值 ， 就 是读 取TIMx_CNT寄存器的值;
-			 //启 用 某 个 定 时 器 ， 就 是 将 定 时 器 控 制 寄 存 器TIMx_CR1的CEN位置1
-			HAL_TIM_Base_Stop(&htim2); 
+			HAL_TIM_Base_Stop(&htim2); //关闭定时器,就是将定时器控制寄存器TIMx_CR1的CEN位置1	
+			delta_t = __HAL_TIM_GET_COUNTER(&htim2); //在运行时读取定时器的当前计数值,就是读取TIM2_CNT寄存器的值,注意单位0.1us;
+			SEQ_flag = (SEQ_flag - GPIO_Pin) / 1024 + 2;
 		}
 }
 
 uint8_t motor_init(void)
 {
 	printf("steste");
-	char info[10];
-	gets(info);
-	if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
-		return info[1]-48+1;
-	return 0;
+	char info[10]={0};
+	while(1)
+	{
+		printf("steste");
+		gets(info);
+		if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
+			return (uint8_t) info[1]-48;
+	}
+	return 255;
 }
 
 uint16_t sonic_init(void)
@@ -275,7 +282,6 @@ uint16_t sonic_init(void)
 		HAL_Delay(1);
 		//大约读入8k组数
 		//拿板子打断点测试
-	
 		for(uint8_t i = 0; i < 5 ; i++)
 		{
 			HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
@@ -304,12 +310,21 @@ uint16_t sonic_init(void)
 
 void Lumos(void)
 {
+	//二极管闪亮一秒
 	HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
 	__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
 	HAL_Delay(500);
 	__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,1000);
 	HAL_Delay(500);
 	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
+}
+
+void printUart(char* type,float16x4_t data)
+{
+	printf("s");
+	printf(type);
+	printf("%03.1f",data);
+	printf("e");
 }
 /* USER CODE END 4 */
 
