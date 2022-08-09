@@ -22,29 +22,35 @@ Dialog DLL:      TCM.DLL V1.53.0.0
  
 <h2>Project:</h2>
 E:\Receiver\MDK-ARM\Receiver.uvprojx
-Project File Date:  07/15/2022
+Project File Date:  08/01/2022
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'E:\Program Files\Keil\ARM\ARMCC\Bin'
 Build target 'Receiver'
 compiling main.c...
-../Src/main.c(229): warning:  #940-D: missing return statement at end of non-void function "motor_init" 
-  }
-../Src/main.c(233): warning:  #177-D: variable "data_std"  was declared but never referenced
-  		uint16_t Temp_std[100],data_std[100];
-../Src/main.c: 2 warnings, 0 errors
+../Src/main.c(145): warning:  #550-D: variable "avg"  was set but never used
+  				uint16_t Temp_ADC[2000], avg[2];
+../Src/main.c(174): warning:  #550-D: variable "theta"  was set but never used
+  				_iq10 theta,alpha,delta_r ;
+../Src/main.c(174): warning:  #177-D: variable "alpha"  was declared but never referenced
+  				_iq10 theta,alpha,delta_r ;
+../Src/main.c(174): warning:  #177-D: variable "delta_r"  was declared but never referenced
+  				_iq10 theta,alpha,delta_r ;
+../Src/main.c(87): warning:  #550-D: variable "std"  was set but never used
+  	uint16_t std=0;
+../Src/main.c: 5 warnings, 0 errors
 linking...
-Program Size: Code=12448 RO-data=292 RW-data=28 ZI-data=1284  
+Program Size: Code=14200 RO-data=292 RW-data=32 ZI-data=1424  
 FromELF: creating hex file...
-"Receiver\Receiver.axf" - 0 Error(s), 2 Warning(s).
+"Receiver\Receiver.axf" - 0 Error(s), 5 Warning(s).
 
 <h2>Software Packages used:</h2>
 
 Package Vendor: ARM
-                http://www.keil.com/pack/ARM.CMSIS.5.8.0.pack
-                ARM.CMSIS.5.8.0
+                http://www.keil.com/pack/ARM.CMSIS.5.9.0.pack
+                ARM.CMSIS.5.9.0
                 CMSIS (Common Microcontroller Software Interface Standard)
-   * Component: CORE Version: 5.5.0
+   * Component: CORE Version: 5.6.0
 
 Package Vendor: Keil
                 http://www.keil.com/pack/Keil.STM32F1xx_DFP.2.4.0.pack
@@ -53,13 +59,13 @@ Package Vendor: Keil
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_Receiver
-  E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.8.0\CMSIS\Core\Include
+  E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\Include
   E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Include
 
 <h2>Collection of Component Files used:</h2>
 
-   * Component: ARM::CMSIS:CORE:5.5.0
-Build Time Elapsed:  00:00:11
+   * Component: ARM::CMSIS:CORE:5.6.0
+Build Time Elapsed:  00:00:17
 </pre>
 </body>
 </html>

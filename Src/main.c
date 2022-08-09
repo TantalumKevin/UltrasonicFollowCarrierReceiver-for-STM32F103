@@ -83,6 +83,7 @@ void Lumos(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	//超声数据参考比较值
 	uint16_t std=0;
   /* USER CODE END 1 */
   
@@ -115,7 +116,10 @@ int main(void)
 	//等待串口拉起
 	while(1)
 	{
-		break;
+		char info[10];
+		gets(info);
+		if(!(strncmp(info,"shelloe",7)))
+			break;
 	}
 	
 	
@@ -138,8 +142,8 @@ int main(void)
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
-				uint16_t Temp_ADC[2000], avg;
-				uint64_t sum[2] = {0,0},time = 0;
+				uint16_t Temp_ADC[2000], avg[2];
+				uint64_t sum[2] = {0,0},time[2] = {0,0};
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
 				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
@@ -156,23 +160,29 @@ int main(void)
 						for(uint16_t k=j; k<2000 ;k+=2)
 						{
 							sum[j] += Temp_ADC[j+k];
-							time++;
+							time[j]++;
 						}
 					}
 				}
-				avg = (uint16_t) sum/time;
+				avg[0] = (uint16_t) sum[0]/time[0];
+				avg[1] = (uint16_t) sum[1]/time[1];
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
 				//判断角度和距�?(计算方法)
 				float dst = 0.0 ,agl = 0.0;
-				_iq r1 ;
+				_iq10 theta,alpha,delta_r ;
 				//已知数据 Δt 单位0.1us Δl = 7cm
-				r1 = _IQ(std+10);
-				agl = _IQtoF(r1);
+				//计算公式
+				//theta = _IQ
+				
 				//串口输出
+				printf("sd");
 				printf("%03.1f",dst);
+				printf("e");
+				printf("sa");
 				printf("%03.1f",agl);
+				printf("e");
 				
 				//标志位清0
 				SEQ_flag = 0;
@@ -258,7 +268,7 @@ uint8_t motor_init(void)
 uint16_t sonic_init(void)
 {
 		uint16_t Temp_std[2000];
-		uint64_t Temp[2] = {0,0}, time = 0;
+		uint64_t Temp = 0, time = 0;
 		//控制5s不断记录数据
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,2000);
 		HAL_TIM_Base_Start_IT(&htim1);
@@ -276,7 +286,7 @@ uint16_t sonic_init(void)
 				{
 					for(uint16_t k=j; k<2000 ;k+=2)
 					{
-						Temp[j] += Temp_std[j+k];
+						Temp += Temp_std[j+k];
 						time++;
 					}
 				}
