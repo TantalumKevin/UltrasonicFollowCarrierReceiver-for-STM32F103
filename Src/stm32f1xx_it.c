@@ -223,7 +223,8 @@ void TIM1_UP_IRQHandler(void)
   /* USER CODE END TIM1_UP_IRQn 0 */
   HAL_TIM_IRQHandler(&htim1);
   /* USER CODE BEGIN TIM1_UP_IRQn 1 */
-	DMA_flag--;
+	if(DMA_flag)
+        DMA_flag--;
   /* USER CODE END TIM1_UP_IRQn 1 */
 }
 
