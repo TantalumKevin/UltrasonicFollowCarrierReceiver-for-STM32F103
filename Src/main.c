@@ -143,7 +143,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读�? 
+		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
 				//DMA读入数据
@@ -160,7 +160,7 @@ int main(void)
 					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
 					*/
-					//注意这个地方要重写，做平均数据处�?
+					//注意这个地方要重写，做平均数据处理
 					for(uint16_t k=0; k<2000 ;k+=2)
 					{
 						for(uint8_t j = 0; j <= 1; j++)
@@ -189,7 +189,7 @@ int main(void)
 				
 				//标志位清0
 				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中�?250次即可达�?5ms控制时间
+				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
 				DMA_flag = 250;
 		}
   }
@@ -243,20 +243,40 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-		if(!SEQ_flag)
+		if(!SEQ_flag && (SEQ_flag - GPIO_Pin) != 0)
 		{
 			
-			HAL_TIM_Base_Start(&htim2);
+			HAL_TIM_OnePulse_Start(&htim2);
 			__HAL_TIM_SetCounter(&htim2,0);
 			SEQ_flag = GPIO_Pin;
 		}
 		else 
 		{
-			HAL_TIM_Base_Stop(&htim2); //关闭定时器,就是将定时器控制寄存器TIMx_CR1的CEN位置1	
-			delta_t = __HAL_TIM_GET_COUNTER(&htim2); //在运行时读取定时器的当前计数值,就是读取TIM2_CNT寄存器的值,注意单位0.1us;
-			SEQ_flag = (SEQ_flag - GPIO_Pin) / 1024 + 2;
+			//关闭定时器,就是将定时器控制寄存器TIMx_CR1的CEN位置1	
+			HAL_TIM_OnePulse_Stop(&htim2); 
+			//在运行时读取定时器的当前计数值,就是读取TIM2_CNT寄存器的值,注意单位0.1us;
+			delta_t = __HAL_TIM_GET_COUNTER(&htim2); 
+			__HAL_TIM_SET_COUNTER(&hitm2, 0);
+			//#define GPIO_PIN_10  ((uint16_t)0x0400)==1024
+			//#define GPIO_PIN_15  ((uint16_t)0x8000)==32768
+			//32768-1024=31744
+			//结果=1 & 3
+			SEQ_flag = (SEQ_flag - GPIO_Pin) / 31744 + 2;
+
 		}
 }
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim == &htim1)//判断中断是否来自于定时器1
+		if(DMA_flag)
+        	DMA_flag--;
+	else if(htim == &htim2)//判断中断是否来自于定时器2
+		if(SEQ_flag>10)
+			SEQ_flag = 0;
+}
+
 
 uint8_t motor_init(void)
 {
