@@ -1,11 +1,11 @@
 # Ultrasonic Follow Carrier Receiver for STM32F103
 
-#### 介绍
-Ultrasonic Follow Carrier Receiver for STM32F103
-超声跟随载物平台接收端-STM32F103
+#### 1 介绍
+本项目为2021-2022学年第二学期电气工程学院2020级卓越班嵌入式系统与智能设计课程设计：超声波跟随载物平台之超声接收端。<br>
+根据设计，STM32F103C6T6A为压电陶瓷驱动电路控制核心MCU，运行C语言代码，驱动传感器与外围电路。
 
-#### 软件架构
-软件架构说明
+#### 2 软件架构
+软件架构采用STM32CubeMX选配导出，相关配置如图所示，或直接打开```Receiver.ioc```文件即可。
 
 
 #### 安装教程
