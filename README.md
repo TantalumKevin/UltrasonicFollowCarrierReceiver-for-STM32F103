@@ -5,34 +5,28 @@
 根据设计，STM32F103C6T6A为压电陶瓷驱动电路控制核心MCU，运行C语言代码，驱动传感器与外围电路。
 
 #### 2 软件架构
-软件架构采用STM32CubeMX选配导出，相关配置如图所示，或直接打开```Receiver.ioc```文件即可。
+软件架构采用STM32CubeMX选配导出，相关配置如图所示，或直接打开```./Receiver.ioc```文件即可。<br><br>
+![Full](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/Full.jpg?raw=true)
+![DMA](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/DMA.jpg?raw=true)
+![GPIO](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/GPIO.jpg?raw=true)
+![ADC](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/ADC.jpg?raw=true)
+![TIM1](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/TIM1.jpg?raw=true)
+![TIM2](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/TIM2.jpg?raw=true)
+![TIM3](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/TIM3.jpg?raw=true)
+![UART1](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/UART1.jpg?raw=true)
+<br>
+请注意：一切参数配置以```./Receiver.ioc```文件为准，图片更新滞后，并不能保证与最新代码适配。
 
-
-#### 安装教程
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来 展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 3 运行流程
+```C
+  MCU各外设初始化->
+  等待串口数据->
+  发送串口数据->   
+  等待串口数据->   
+  //这里的三步串口是为了保证数据通畅的初始化通信
+  传感器数据初始化->
+┌>循环读取传感器数据->
+│ [根据传感器原始数据计算目标相对位置->]
+│ 发送串口数据-> ─┐
+└────────────────┘
+```
