@@ -3,7 +3,7 @@
 #### 1 介绍
 本项目为2021-2022学年第二学期电气工程学院2020级卓越班嵌入式系统与智能设计课程设计：超声波跟随载物平台之超声接收端。<br>
 根据设计，STM32F103C6T6A为压电陶瓷驱动电路控制核心MCU，运行C语言代码，驱动传感器与外围电路。
-
+相关PCB设计文件，请移步仓库[Github](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-PCB) & [Gitee](https://gitee.com/kevin_ud/ultrasonic-follow-carrier-receiver-pcb)
 #### 2 软件架构
 软件架构采用STM32CubeMX选配导出，相关配置如图所示，或直接打开```./Receiver.ioc```文件即可。<br><br>
 ![Full](https://github.com/TantalumKevin/UltrasonicFollowCarrierReceiver-for-STM32F103/blob/master/Img/Full.jpg?raw=true)
