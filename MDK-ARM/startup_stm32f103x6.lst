@@ -442,7 +442,7 @@ Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M3 --apcs=interw
 ork --depend=receiver\startup_stm32f103x6.d -oreceiver\startup_stm32f103x6.o -I
 .\RTE\_Receiver -I"E:\Program Files\Keil\ARM\PACK\ARM\CMSIS\5.9.0\CMSIS\Core\In
 clude" -I"E:\Program Files\Keil\ARM\PACK\Keil\STM32F1xx_DFP\2.4.0\Device\Includ
-e" --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 536" --p
+e" --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 537" --p
 redefine="_RTE_ SETA 1" --predefine="STM32F10X_LD SETA 1" --predefine="_RTE_ SE
 TA 1" --list=startup_stm32f103x6.lst startup_stm32f103x6.s
 
