@@ -134,6 +134,7 @@ int main(void)
 	Lumos(); 
 
 	sonic_std=sonic_init();
+	printUart((float)sonic_std);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -183,9 +184,9 @@ int main(void)
 				//theta = _IQ
 				
 				//串口输出
-				printUart((float)delta_t);
-				printUart((float)_IQ15toF(avg[0])-sonic_std);
-				printUart((float)_IQ15toF(avg[1])-sonic_std);
+				printUart((float)delta_t*((float)SEQ_flag-1));
+				printUart((float)_IQ15toF(avg[0]));
+				printUart((float)_IQ15toF(avg[1]));
 				
 				//标志位清0
 				SEQ_flag = 0;
@@ -261,7 +262,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			//#define GPIO_PIN_15  ((uint16_t)0x8000)==32768
 			//32768-1024=31744
 			//结果=1 & 3
-			SEQ_flag = (SEQ_flag - GPIO_Pin) / 31744 + 2;
+			//1:1015
+			//3:1510
+			SEQ_flag = ((int)SEQ_flag - (int)GPIO_Pin) / 31744 + 2;
 
 		}
 }
