@@ -207,7 +207,7 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -220,7 +220,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks 
+  /** Initializes the CPU, AHB and APB busses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -247,17 +247,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(!SEQ_flag && (SEQ_flag - GPIO_Pin) != 0)
 		{
 			
-			HAL_TIM_OnePulse_Start(&htim2);
+			HAL_TIM_Base_Start(&htim2);
 			__HAL_TIM_SetCounter(&htim2,0);
 			SEQ_flag = GPIO_Pin;
 		}
 		else 
 		{
 			//关闭定时器,就是将定时器控制寄存器TIMx_CR1的CEN位置1	
-			HAL_TIM_OnePulse_Stop(&htim2); 
+			HAL_TIM_Base_Stop(&htim2); 
 			//在运行时读取定时器的当前计数值,就是读取TIM2_CNT寄存器的值,注意单位0.1us;
 			delta_t = __HAL_TIM_GET_COUNTER(&htim2); 
-			__HAL_TIM_SET_COUNTER(&hitm2, 0);
+			__HAL_TIM_SET_COUNTER(&htim2, 0);
 			//#define GPIO_PIN_10  ((uint16_t)0x0400)==1024
 			//#define GPIO_PIN_15  ((uint16_t)0x8000)==32768
 			//32768-1024=31744
@@ -272,12 +272,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim == &htim1)//判断中断是否来自于定时器1
+	if(htim == &htim1)
+  {//判断中断是否来自于定时器1
 		if(DMA_flag)
         	DMA_flag--;
-	else if(htim == &htim2)//判断中断是否来自于定时器2
+  }
+	else 
+  {//判断中断是否来自于定时器2
+    if(htim == &htim2)
 		if(SEQ_flag>10)
 			SEQ_flag = 0;
+  }
 }
 
 
@@ -370,7 +375,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
