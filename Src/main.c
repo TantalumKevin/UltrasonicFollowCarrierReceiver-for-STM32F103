@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
@@ -70,6 +69,7 @@ uint8_t motor_init(void);
 uint16_t sonic_init(void);
 void Lumos(void);
 void printUart(float data);
+uint8_t gcInfo(uint8_t * cmpstr, uint8_t num);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,7 +88,6 @@ int main(void)
 	uint16_t sonic_std=0;
   /* USER CODE END 1 */
   
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -115,26 +114,15 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	//等待串口拉起
-	while(1)
-	{
-		char info[10]={0};
-		while(!info[0])
-    {
-      Lumos();
-      HAL_UART_Receive(&huart1, (uint8_t *)info, 7, 0xFFFF);
-			//gets(info);
-    }
-		if(!(strncmp(info,"shelloe",7)))
-		{
-			HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,0xffff);
-			break;
-		}
-	}
-	
-	
+  //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xffff);
+	while (gcInfo((uint8_t *)"shelloe",7));
+  HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,HAL_MAX_DELAY);
 	if(motor_init())
+  {
+    Lumos();
 		while(motor_init())
 			Lumos();
+  }
 	Lumos(); 
 
 	sonic_std=sonic_init();
@@ -212,7 +200,8 @@ void SystemClock_Config(void)
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  /** Initializes the CPU, AHB and APB busses clocks
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
@@ -225,7 +214,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  /** Initializes the CPU, AHB and APB busses clocks
+
+  /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
@@ -294,19 +284,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 uint8_t motor_init(void)
 {
 	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
+  HAL_Delay(300);
 	char info[10]={0};
 	while(1)
 	{
-		HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
-		gets(info);
-		if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
+		HAL_UART_Abort(&huart1);
+    HAL_Delay(50);
+    HAL_UART_Receive(&huart1, (uint8_t *)info, 3, 0xFFFF);
+    HAL_UART_Abort(&huart1);
+    HAL_Delay(50);
+		if(!(strncmp(info,"s",1)||strncmp(info+2,"e",1)))
 			return (uint8_t) info[1]-48;
+    HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xFFFF);
+    Lumos();
 	}
 }
 
 uint16_t sonic_init(void)
 {
-		uint16_t Temp_std[2000];
+		uint16_t Temp_std[450];
 		uint64_t Temp = 0, time = 0;
 		//控制5s不断记录数据
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,2000);
@@ -322,7 +318,7 @@ uint16_t sonic_init(void)
 			{
 				for(uint8_t j = 0; j <= 1; j++)
 				{
-					for(uint16_t k=j; k<2000 ;k+=2)
+					for(uint16_t k=j; k<450 ;k+=2)
 					{
 						Temp += Temp_std[j+k];
 						time++;
@@ -354,11 +350,31 @@ void Lumos(void)
 void printUart(float data)
 {
 	HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xffff);
-  // 把浮点数data转换为字符串，存放在strdata中。
+  // 把浮点数data转换为字符串，存放在strdata中
   char strdata[6];
   sprintf(strdata,"%03.1f",data);
 	HAL_UART_Transmit(&huart1,(uint8_t *)strdata,5,0xffff);
 	HAL_UART_Transmit(&huart1,(uint8_t *)"e",1,0xffff);
+}
+
+uint8_t gcInfo(uint8_t * cmpstr, uint8_t num)
+{
+  //gc的意思是g:get,c:compare
+  Lumos();
+  uint8_t tempInfo_i;
+  for(tempInfo_i = 0; tempInfo_i < num ; tempInfo_i++)
+  {
+    //Lumos();
+    char ch=0;
+    while(strncmp(&ch,(char *)cmpstr+tempInfo_i,1))
+    {
+      //Lumos();
+      HAL_UART_Receive(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    }
+  }
+  HAL_UART_Abort(&huart1);
+  HAL_Delay(50);
+  return 0;
 }
 /* USER CODE END 4 */
 
@@ -390,5 +406,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
