@@ -281,7 +281,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void XferCpltCallback(DMA_HandleTypeDef *hdma)
 {
-
+		TEMP_ADC[0]+=Temp_ADC[0];//iq
+		TEMP_ADC[1]+=Temp_ADC[1];
+		if ((++DMA_Count) ==22)
+		{
+			ADC_filter[0]=TEMP_ADC[0]/DMA_Count;//iq
+			ADC_filter[1]=TEMP_ADC[1]/DMA_Count;
+			DMA_Count = 0;
+			_IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
+		}
+		//大约读入8k组数
+		//拿板子打断点测试
 }
 
 uint8_t motor_init(void)
@@ -313,32 +323,16 @@ uint16_t sonic_init(void)
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
 		HAL_TIM_Base_Start_IT(&htim1);
 		HAL_Delay(1);
-		//大约读入8k组数
-		//拿板子打断点测试
-		for(uint8_t i = 0; i < 5 ; i++)
-		{
-			HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
-			__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
-			while(DMA_flag)
-			{
-				for(uint8_t j = 0; j <= 1; j++)
-				{
-					for(uint16_t k=j; k<450 ;k+=2)
-					{
-						Temp += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
-						time++;
-					}
-				}
-				//闪灯
-				__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
-						(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
-			}
-			HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
-		}
+		HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
+		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
+		//闪灯
+		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
+			(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
+
 		HAL_TIM_Base_Stop_IT(&htim1);
 		HAL_ADC_Stop_DMA(&hadc1);
 		DMA_flag = 250;
-    uint64_t result = (uint64_t)_IQ15int(_IQ15mpy(_IQ15div(Temp,time),_IQ15(4095)));
+    	uint64_t result = (uint64_t)_IQ15int(_IQ15mpy(_IQ15div(Temp,time),_IQ15(4095)));
 		return result;
 }
 
