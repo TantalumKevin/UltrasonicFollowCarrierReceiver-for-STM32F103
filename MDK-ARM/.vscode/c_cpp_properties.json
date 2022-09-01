@@ -8,11 +8,11 @@
                 "e:\\Receiver\\Drivers\\STM32F1xx_HAL_Driver\\Inc\\Legacy",
                 "e:\\Receiver\\Drivers\\CMSIS\\Device\\ST\\STM32F1xx\\Include",
                 "e:\\Receiver\\Drivers\\CMSIS\\Include",
+                "e:\\Receiver\\IQmathLib",
                 "E:\\Program Files\\Keil\\ARM\\ARMCC\\include",
                 "E:\\Program Files\\Keil\\ARM\\ARMCC\\include\\rw",
                 "e:\\Receiver\\MDK-ARM",
                 "e:\\Receiver\\Src",
-                "e:\\Receiver\\IQmathLib",
                 "e:\\Receiver\\Drivers\\STM32F1xx_HAL_Driver\\Src"
             ],
             "defines": [

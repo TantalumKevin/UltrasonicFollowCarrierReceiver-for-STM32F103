@@ -119,10 +119,14 @@ int main(void)
 	{
 		char info[10]={0};
 		while(!info[0])
-			gets(info);
+    {
+      Lumos();
+      HAL_UART_Receive(&huart1, (uint8_t *)info, 7, 0xFFFF);
+			//gets(info);
+    }
 		if(!(strncmp(info,"shelloe",7)))
 		{
-			printf("shelloe");
+			HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,0xffff);
 			break;
 		}
 	}
@@ -149,7 +153,8 @@ int main(void)
 		{
 				//DMA读入数据
 				//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
-				uint16_t Temp_ADC[2000];
+        //随便写一个buffer大小，实测再改
+				uint16_t Temp_ADC[450];
 				_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
 				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
 				//控制5ms不断比较有关数据
@@ -162,7 +167,7 @@ int main(void)
 					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
 					*/
 					//注意这个地方要重写，做平均数据处理
-					for(uint16_t k=0; k<2000 ;k+=2)
+					for(uint16_t k=0; k<450 ;k+=2)
 					{
 						for(uint8_t j = 0; j <= 1; j++)
 						{
@@ -288,11 +293,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 uint8_t motor_init(void)
 {
-	printf("steste");
+	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
 	char info[10]={0};
 	while(1)
 	{
-		printf("steste");
+		HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
 		gets(info);
 		if(!(strncmp(info,"sxe",1)||strncmp(info+2,"e",1)))
 			return (uint8_t) info[1]-48;
@@ -348,9 +353,12 @@ void Lumos(void)
 
 void printUart(float data)
 {
-	printf("s");
-	printf("%03.1f",data);
-	printf("e");
+	HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xffff);
+  // 把浮点数data转换为字符串，存放在strdata中。
+  char strdata[6];
+  sprintf(strdata,"%03.1f",data);
+	HAL_UART_Transmit(&huart1,(uint8_t *)strdata,5,0xffff);
+	HAL_UART_Transmit(&huart1,(uint8_t *)"e",1,0xffff);
 }
 /* USER CODE END 4 */
 
