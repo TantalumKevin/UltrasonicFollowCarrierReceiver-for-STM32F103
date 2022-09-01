@@ -58,8 +58,9 @@
 	*/
 uint16_t SEQ_flag = 0;
 //这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达5ms控制时间
-uint16_t DMA_flag = 250*200;
+uint16_t DMA_flag = 0xFFFF;//250*200;
 uint16_t delta_t = 0 ;
+uint16_t Temp_ADC[450];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -142,9 +143,8 @@ int main(void)
 				//DMA读入数据
 				//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
         //随便写一个buffer大小，实测再改
-				uint16_t Temp_ADC[450];
 				_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
-				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,2000);
+				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
 				//控制5ms不断比较有关数据
 				HAL_TIM_Base_Start_IT(&htim1);
 				DMA_flag = 250 ; 
@@ -159,13 +159,13 @@ int main(void)
 					{
 						for(uint8_t j = 0; j <= 1; j++)
 						{
-							sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),4096);
+							sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
 							time[j]++;
 						}
 					}
 				}
-				avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4096));
-				avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4096));
+				avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4095));
+				avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4095));
 				HAL_TIM_Base_Stop_IT(&htim1);
 				HAL_ADC_Stop_DMA(&hadc1);
 				
@@ -302,10 +302,10 @@ uint8_t motor_init(void)
 
 uint16_t sonic_init(void)
 {
-		uint16_t Temp_std[450];
-		uint64_t Temp = 0, time = 0;
+		//uint16_t Temp_ADC[450];
+		_iq15 Temp = 0, time = 0;
 		//控制5s不断记录数据
-		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_std,2000);
+		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
 		HAL_TIM_Base_Start_IT(&htim1);
 		HAL_Delay(1);
 		//大约读入8k组数
@@ -320,7 +320,7 @@ uint16_t sonic_init(void)
 				{
 					for(uint16_t k=j; k<450 ;k+=2)
 					{
-						Temp += Temp_std[j+k];
+						Temp += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
 						time++;
 					}
 				}
@@ -333,7 +333,8 @@ uint16_t sonic_init(void)
 		HAL_TIM_Base_Stop_IT(&htim1);
 		HAL_ADC_Stop_DMA(&hadc1);
 		DMA_flag = 250;
-		return (uint16_t)Temp/time;
+    uint64_t result = (uint64_t)_IQ15int(_IQ15mpy(_IQ15div(Temp,time),_IQ15(4095)));
+		return result;
 }
 
 void Lumos(void)
@@ -355,6 +356,7 @@ void printUart(float data)
   sprintf(strdata,"%03.1f",data);
 	HAL_UART_Transmit(&huart1,(uint8_t *)strdata,5,0xffff);
 	HAL_UART_Transmit(&huart1,(uint8_t *)"e",1,0xffff);
+  HAL_UART_Abort(&huart1);
 }
 
 uint8_t gcInfo(uint8_t * cmpstr, uint8_t num)
