@@ -28,7 +28,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "IQmathLib.h"
-#include "stdio.h"
 #include "string.h"
 /* USER CODE END Includes */
 
@@ -61,6 +60,7 @@ uint16_t SEQ_flag = 0;
 uint16_t DMA_flag = 0xFFFF;//250*200;
 uint16_t delta_t = 0 ;
 uint16_t Temp_ADC[450];
+uint8_t DMA_Count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -88,7 +88,7 @@ int main(void)
 	//超声数据参考比较值
 	uint16_t sonic_std=0;
   /* USER CODE END 1 */
-  
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -264,7 +264,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		}
 }
 
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim == &htim1)
@@ -280,23 +279,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
+void XferCpltCallback(DMA_HandleTypeDef *hdma)
+{
+
+}
 
 uint8_t motor_init(void)
 {
 	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
-  HAL_Delay(300);
+  	HAL_Delay(300);
 	char info[10]={0};
 	while(1)
 	{
 		HAL_UART_Abort(&huart1);
-    HAL_Delay(50);
-    HAL_UART_Receive(&huart1, (uint8_t *)info, 3, 0xFFFF);
-    HAL_UART_Abort(&huart1);
-    HAL_Delay(50);
+		HAL_Delay(50);
+		HAL_UART_Receive(&huart1, (uint8_t *)info, 3, 0xFFFF);
+		HAL_UART_Abort(&huart1);
+		HAL_Delay(50);
 		if(!(strncmp(info,"s",1)||strncmp(info+2,"e",1)))
 			return (uint8_t) info[1]-48;
-    HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xFFFF);
-    Lumos();
+		HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xFFFF);
+		Lumos();
 	}
 }
 
@@ -305,6 +308,8 @@ uint16_t sonic_init(void)
 		//uint16_t Temp_ADC[450];
 		_iq15 Temp = 0, time = 0;
 		//控制5s不断记录数据
+		//初始化ADC
+		HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
 		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
 		HAL_TIM_Base_Start_IT(&htim1);
 		HAL_Delay(1);
