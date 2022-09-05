@@ -297,7 +297,7 @@ void XferCpltCallback(DMA_HandleTypeDef *hdma)
 uint8_t motor_init(void)
 {
 	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
-  	HAL_Delay(300);
+  HAL_Delay(300);
 	char info[10]={0};
 	while(1)
 	{
