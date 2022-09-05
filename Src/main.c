@@ -29,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "IQmathLib.h"
 #include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,11 +57,10 @@
 	1/3=L/R相对方位
 	*/
 uint16_t SEQ_flag = 0;
-//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达5ms控制时间
-uint16_t DMA_flag = 0xFFFF;//250*200;
 uint16_t delta_t = 0 ;
-uint16_t Temp_ADC[450];
-uint8_t DMA_Count = 0;
+uint16_t Temp_ADC[44];
+_iq15 TEMP_ADC[2]={_IQ15(0.0),_IQ15(0.0)};
+uint16_t DMA_Count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,7 +115,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 	//等待串口拉起
-  //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xffff);
+  //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xFFFF);
 	while (gcInfo((uint8_t *)"shelloe",7));
   HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,HAL_MAX_DELAY);
 	if(motor_init())
@@ -125,9 +125,11 @@ int main(void)
 			Lumos();
   }
 	Lumos(); 
-
-	sonic_std=sonic_init();
-	printUart((float)sonic_std);
+	for(uint8_t Init_Sonic = 0; Init_Sonic < 5; Init_Sonic++)
+	{
+		sonic_std=sonic_init();
+		printUart((float)sonic_std);
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -140,51 +142,43 @@ int main(void)
 		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
-				//DMA读入数据
-				//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
-        //随便写一个buffer大小，实测再改
-				_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
-				HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
-				//控制5ms不断比较有关数据
-				HAL_TIM_Base_Start_IT(&htim1);
-				DMA_flag = 250 ; 
-				while(DMA_flag)
+			//DMA读入数据
+			//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
+			//随便写一个buffer大小，实测再改
+			_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
+			HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
+				/*
+				if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
+				if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
+				*/
+				//注意这个地方要重写，做平均数据处理
+				for(uint16_t k=0; k<450 ;k+=2)
 				{
-					/*
-					if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
-					if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
-					*/
-					//注意这个地方要重写，做平均数据处理
-					for(uint16_t k=0; k<450 ;k+=2)
+					for(uint8_t j = 0; j <= 1; j++)
 					{
-						for(uint8_t j = 0; j <= 1; j++)
-						{
-							sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
-							time[j]++;
-						}
+						sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
+						time[j]++;
 					}
 				}
-				avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4095));
-				avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4095));
-				HAL_TIM_Base_Stop_IT(&htim1);
-				HAL_ADC_Stop_DMA(&hadc1);
-				
-				//判断角度和距离(计算方法)
-				//float dst = 0.0 ,agl = 0.0;
-				//_iq10 theta,alpha,delta_r ;
-				//已知数据 Δt 单位0.1us Δl = 7cm
-				//计算公式
-				//theta = _IQ
-				
-				//串口输出
-				printUart((float)delta_t*((float)SEQ_flag-1));
-				printUart((float)_IQ15toF(avg[0]));
-				printUart((float)_IQ15toF(avg[1]));
-				
-				//标志位清0
-				SEQ_flag = 0;
-				//这里DMAflag初始值设置为250的用意是，TIM1每中断一次时间为0.02ms，控制中断250次即可达到5ms控制时间
-				DMA_flag = 250;
+			avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4095));
+			avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4095));
+
+			HAL_ADC_Stop_DMA(&hadc1);
+			
+			//判断角度和距离(计算方法)
+			//float dst = 0.0 ,agl = 0.0;
+			//_iq10 theta,alpha,delta_r ;
+			//已知数据 Δt 单位0.1us Δl = 7cm
+			//计算公式
+			//theta = _IQ
+			
+			//串口输出
+			printUart((float)delta_t*((float)SEQ_flag-1));
+			printUart((float)_IQ15toF(avg[0]));
+			printUart((float)_IQ15toF(avg[1]));
+			
+			//标志位清0
+			SEQ_flag = 0;
 		}
   }
   /* USER CODE END 3 */
@@ -266,37 +260,21 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim == &htim1)
-  {//判断中断是否来自于定时器1
-		if(DMA_flag)
-        	DMA_flag--;
-  }
-	else 
-  {//判断中断是否来自于定时器2
     if(htim == &htim2)
 		if(SEQ_flag>10)
 			SEQ_flag = 0;
-  }
 }
 
 void XferCpltCallback(DMA_HandleTypeDef *hdma)
 {
-		TEMP_ADC[0]+=Temp_ADC[0];//iq
-		TEMP_ADC[1]+=Temp_ADC[1];
-		if ((++DMA_Count) ==22)
-		{
-			ADC_filter[0]=TEMP_ADC[0]/DMA_Count;//iq
-			ADC_filter[1]=TEMP_ADC[1]/DMA_Count;
-			DMA_Count = 0;
-			_IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
-		}
-		//大约读入8k组数
-		//拿板子打断点测试
+		++DMA_Count;
+		for(uint8_t index = 0; index < 44; index++)
+			TEMP_ADC[index%2]+=_IQ15div(Temp_ADC[index],4095);//iq
 }
 
 uint8_t motor_init(void)
 {
-	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xffff);
+	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xFFFF);
   HAL_Delay(300);
 	char info[10]={0};
 	while(1)
@@ -316,24 +294,25 @@ uint8_t motor_init(void)
 uint16_t sonic_init(void)
 {
 		//uint16_t Temp_ADC[450];
-		_iq15 Temp = 0, time = 0;
 		//控制5s不断记录数据
 		//初始化ADC
-		HAL_ADCEx_Calibration_Start(&hadc1,ADC_SINGLE_ENDED);
-		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
-		HAL_TIM_Base_Start_IT(&htim1);
-		HAL_Delay(1);
+		HAL_ADCEx_Calibration_Start(&hadc1);
+		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,44);
 		HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
 		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
 		//闪灯
-		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
-			(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
-
-		HAL_TIM_Base_Stop_IT(&htim1);
+		for(uint8_t Sonic_Init_i = 0; Sonic_Init_i < 1000; Sonic_Init_i ++)
+		{
+			__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
+				(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
+			HAL_Delay(1);
+		}
 		HAL_ADC_Stop_DMA(&hadc1);
-		DMA_flag = 250;
-    	uint64_t result = (uint64_t)_IQ15int(_IQ15mpy(_IQ15div(Temp,time),_IQ15(4095)));
-		return result;
+		uint16_t Sonic_Init_Return = (uint16_t)_IQ15int(_IQ15mpy(_IQ15div(TEMP_ADC[0]+TEMP_ADC[1],DMA_Count),_IQ15(4095)));
+		TEMP_ADC[0] = _IQ15(0.0);
+		TEMP_ADC[1] = _IQ15(0.0);
+		DMA_Count = 0;
+		return Sonic_Init_Return;
 }
 
 void Lumos(void)
@@ -349,12 +328,12 @@ void Lumos(void)
 
 void printUart(float data)
 {
-	HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xffff);
+	HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xFFFF);
   // 把浮点数data转换为字符串，存放在strdata中
   char strdata[6];
   sprintf(strdata,"%03.1f",data);
-	HAL_UART_Transmit(&huart1,(uint8_t *)strdata,5,0xffff);
-	HAL_UART_Transmit(&huart1,(uint8_t *)"e",1,0xffff);
+	HAL_UART_Transmit(&huart1,(uint8_t *)strdata,5,0xFFFF);
+	HAL_UART_Transmit(&huart1,(uint8_t *)"e",1,0xFFFF);
   HAL_UART_Abort(&huart1);
 }
 
