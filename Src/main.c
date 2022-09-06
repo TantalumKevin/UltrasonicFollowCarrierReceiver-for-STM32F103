@@ -116,6 +116,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	//等待串口拉起
   //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xFFFF);
+  HAL_Delay(5000);
+  Lumos();
 	while (gcInfo((uint8_t *)"shelloe",7));
   HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,HAL_MAX_DELAY);
 	if(motor_init())
@@ -133,7 +135,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  /* USER CODE BEGIN WHILE *////
   while (1)
   {
     /* USER CODE END WHILE */
