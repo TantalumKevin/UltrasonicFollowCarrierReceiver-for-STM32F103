@@ -20,7 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -58,8 +57,7 @@
 	*/
 uint16_t SEQ_flag = 0;
 uint16_t delta_t = 0 ;
-uint16_t Temp_ADC[44];
-_iq15 TEMP_ADC[2]={_IQ15(0.0),_IQ15(0.0)};
+float TEMP_ADC[2]={0.0,0.0};
 uint16_t DMA_Count = 0;
 /* USER CODE END PV */
 
@@ -107,7 +105,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
@@ -116,7 +113,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	//等待串口拉起
   //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xFFFF);
-  HAL_Delay(5000);
+  Lumos();
+  //HAL_Delay(5000);
   Lumos();
 	while (gcInfo((uint8_t *)"shelloe",7));
   HAL_UART_Transmit(&huart1,(uint8_t *)"shelloe",7,HAL_MAX_DELAY);
@@ -127,6 +125,7 @@ int main(void)
 			Lumos();
   }
 	Lumos(); 
+  
 	for(uint8_t Init_Sonic = 0; Init_Sonic < 5; Init_Sonic++)
 	{
 		sonic_std=sonic_init();
@@ -135,7 +134,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE *////
+  /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
@@ -148,7 +147,7 @@ int main(void)
 			//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
 			//随便写一个buffer大小，实测再改
 			_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
-			HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,450);
+			//adc
 				/*
 				if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
 				if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
@@ -158,7 +157,7 @@ int main(void)
 				{
 					for(uint8_t j = 0; j <= 1; j++)
 					{
-						sum[j] += _IQ15div(_IQ15(Temp_ADC[j+k]),_IQ15(4095));
+						sum[j] += _IQ15div(_IQ15(TEMP_ADC[j+k]),_IQ15(4095));
 						time[j]++;
 					}
 				}
@@ -267,13 +266,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			SEQ_flag = 0;
 }
 
-void XferCpltCallback(DMA_HandleTypeDef *hdma)
-{
-		++DMA_Count;
-		for(uint8_t index = 0; index < 44; index++)
-			TEMP_ADC[index%2]+=_IQ15div(Temp_ADC[index],4095);//iq
-}
-
 uint8_t motor_init(void)
 {
 	HAL_UART_Transmit(&huart1,(uint8_t *)"steste",6,0xFFFF);
@@ -299,20 +291,28 @@ uint16_t sonic_init(void)
 		//控制5s不断记录数据
 		//初始化ADC
 		HAL_ADCEx_Calibration_Start(&hadc1);
-		HAL_ADC_Start_DMA(&hadc1,(uint32_t*)&Temp_ADC,44);
 		HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
-		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
+		__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);   
+    
 		//闪灯
-		for(uint8_t Sonic_Init_i = 0; Sonic_Init_i < 1000; Sonic_Init_i ++)
+		for(uint16_t Sonic_Init_i = 0; Sonic_Init_i < 200; Sonic_Init_i ++)
 		{
-			__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
-				(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+1)%1000);
-			HAL_Delay(1);
+      for (uint8_t prd_i = 0; prd_i < 22; prd_i++)
+      {//输出一个周期(T=1/40k)ADC数值
+        for (uint8_t adc_i = 0; adc_i < 2; adc_i++)
+        {//输出一组ADC数值
+          HAL_ADC_Start(&hadc1);
+          if(HAL_OK == HAL_ADC_PollForConversion(&hadc1, 1))
+            //输出一次ADC单通道值，下次输出为另一通道
+            TEMP_ADC[adc_i] += HAL_ADC_GetValue(&hadc1)/4095.0;
+        }
+      }
+      __HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,\
+				(__HAL_TIM_GET_COMPARE(&htim3,TIM_CHANNEL_3)+5)%1000);
 		}
-		HAL_ADC_Stop_DMA(&hadc1);
-		uint16_t Sonic_Init_Return = (uint16_t)_IQ15int(_IQ15mpy(_IQ15div(TEMP_ADC[0]+TEMP_ADC[1],DMA_Count),_IQ15(4095)));
-		TEMP_ADC[0] = _IQ15(0.0);
-		TEMP_ADC[1] = _IQ15(0.0);
+		uint16_t Sonic_Init_Return = (uint16_t)(TEMP_ADC[0]+TEMP_ADC[1])*4095.0/8800.0;
+		TEMP_ADC[0] = 0.0;
+		TEMP_ADC[1] = 0.0;
 		DMA_Count = 0;
 		return Sonic_Init_Return;
 }
