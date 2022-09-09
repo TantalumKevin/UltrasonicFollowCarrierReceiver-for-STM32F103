@@ -110,6 +110,8 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  //抢先关闭外部中断以防意外
+  HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 	//等待串口拉起
   //HAL_UART_Transmit(&huart1,(uint8_t *)"s",1,0xFFFF);
   Lumos();
@@ -134,6 +136,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  //开启外部中断，进入常规工作模式
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
   while (1)
   {
     /* USER CODE END WHILE */
