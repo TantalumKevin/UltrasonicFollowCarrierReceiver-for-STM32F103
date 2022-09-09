@@ -58,7 +58,6 @@
 uint16_t SEQ_flag = 0;
 uint16_t delta_t = 0 ;
 float TEMP_ADC[2]={0.0,0.0};
-uint16_t DMA_Count = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -143,28 +142,18 @@ int main(void)
 		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
-			//DMA读入数据
+			//原有思路是DMA读入数据，但由于DMA中断太快难以控制，转而改用轮询
 			//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
 			//随便写一个buffer大小，实测再改
-			_iq15 sum[2] = {0,0},time[2] = {0,0},avg[2];
-			//adc
-				/*
-				if(Temp_ADC[0]>Max_ADC[0]) Max_ADC[0] = Temp_ADC[0];
-				if(Temp_ADC[1]>Max_ADC[1]) Max_ADC[1] = Temp_ADC[1];
-				*/
-				//注意这个地方要重写，做平均数据处理
-				for(uint16_t k=0; k<450 ;k+=2)
-				{
-					for(uint8_t j = 0; j <= 1; j++)
-					{
-						sum[j] += _IQ15div(_IQ15(TEMP_ADC[j+k]),_IQ15(4095));
-						time[j]++;
-					}
-				}
-			avg[0] = _IQ15mpy(_IQ15div(sum[0],time[0]),_IQ15(4095));
-			avg[1] = _IQ15mpy(_IQ15div(sum[1],time[1]),_IQ15(4095));
-
-			HAL_ADC_Stop_DMA(&hadc1);
+      float Temp_ADC[2]={0,0};
+      for (uint8_t adc_i = 0; adc_i < 2200; adc_i++)
+      {//输出100个周期(T=1/40k)ADC数值(22次采样≈1T)
+        HAL_ADC_Start(&hadc1);
+        if(HAL_OK == HAL_ADC_PollForConversion(&hadc1, 1))
+          //输出一次ADC单通道值，下次输出为另一通道
+          Temp_ADC[adc_i%2] += HAL_ADC_GetValue(&hadc1)/4095.0;
+      }
+			
 			
 			//判断角度和距离(计算方法)
 			//float dst = 0.0 ,agl = 0.0;
@@ -175,8 +164,8 @@ int main(void)
 			
 			//串口输出
 			printUart((float)delta_t*((float)SEQ_flag-1));
-			printUart((float)_IQ15toF(avg[0]));
-			printUart((float)_IQ15toF(avg[1]));
+			printUart((float)Temp_ADC[0]*4095/1100.0);
+			printUart((float)Temp_ADC[1]*4095/1100.0);
 			
 			//标志位清0
 			SEQ_flag = 0;
@@ -313,7 +302,6 @@ uint16_t sonic_init(void)
 		uint16_t Sonic_Init_Return = (uint16_t)(TEMP_ADC[0]+TEMP_ADC[1])*4095.0/8800.0;
 		TEMP_ADC[0] = 0.0;
 		TEMP_ADC[1] = 0.0;
-		DMA_Count = 0;
 		return Sonic_Init_Return;
 }
 
