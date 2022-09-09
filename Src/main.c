@@ -146,6 +146,8 @@ int main(void)
 		//仅有SEQ_flag=1OR3时视为有声波信号传入，进行数据读取
 		if (SEQ_flag == 1 || SEQ_flag == 3)
 		{
+      //关闭中断以防意外
+      HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 			//原有思路是DMA读入数据，但由于DMA中断太快难以控制，转而改用轮询
 			//此处原想用IQmath加速,但显然IQmath难以计算如此数量级的数字,
 			//随便写一个buffer大小，实测再改
@@ -174,6 +176,8 @@ int main(void)
 			//标志位清0
 			SEQ_flag = 0;
 		}
+    //重新开启中断
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
   }
   /* USER CODE END 3 */
 }
