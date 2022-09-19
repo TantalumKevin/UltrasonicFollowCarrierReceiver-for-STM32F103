@@ -127,11 +127,17 @@ int main(void)
   }
 	Lumos(); 
   
+  HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);
+	__HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,0);
+  
 	for(uint8_t Init_Sonic = 0; Init_Sonic < 5; Init_Sonic++)
 	{
 		sonic_std=sonic_init();
 		printUart((float)sonic_std);
 	}
+  
+  __HAL_TIM_SET_COMPARE(&htim3,TIM_CHANNEL_3,1000);
+	HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
   /* USER CODE END 2 */
 
   /* Infinite loop */

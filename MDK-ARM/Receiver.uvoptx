@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>138</LineNumber>
+          <LineNumber>316</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134232652</Address>
+          <Address>134233148</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,14 +163,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>../Src/main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Receiver\../Src/main.c\138</Expression>
+          <Expression>\\Receiver\../Src/main.c\316</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>138</LineNumber>
+          <LineNumber>146</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134232880</Address>
+          <Address>134232390</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -179,32 +179,33 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>../Src/main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Receiver\../Src/main.c\138</Expression>
+          <Expression>\\Receiver\../Src/main.c\146</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>140</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134232382</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>../Src/main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Receiver\../Src/main.c\140</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>TEMP_ADC[2]</ItemText>
-        </Ww>
-        <Ww>
-          <count>1</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>Sonic_Init_Return</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>HAL_ADC_GetValue,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>3</count>
-          <WinNumber>1</WinNumber>
           <ItemText>TEMP_ADC[0]</ItemText>
         </Ww>
         <Ww>
-          <count>4</count>
+          <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>TEMP_ADC[1]</ItemText>
         </Ww>
